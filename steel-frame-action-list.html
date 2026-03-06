@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鉄骨設計 Action List</title>
+  <style>
+    body {
+      font-family: "Hiragino Sans", "Meiryo", sans-serif;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    h1 {
+      color: #1a237e;
+      border-bottom: 3px solid #1565c0;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    h2 {
+      color: #1565c0;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      background-color: #e3f2fd;
+      border-left: 4px solid #1565c0;
+    }
+    .phase-number {
+      display: inline-block;
+      background-color: #1565c0;
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      line-height: 28px;
+      text-align: center;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      font-size: 0.9rem;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul li {
+      padding: 0.5rem 0.8rem;
+      margin: 0.3rem 0;
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    ul li:hover {
+      background-color: #f1f8fe;
+    }
+    input[type="checkbox"] {
+      margin-top: 0.25rem;
+      width: 18px;
+      height: 18px;
+      accent-color: #1565c0;
+      flex-shrink: 0;
+    }
+    label {
+      cursor: pointer;
+      line-height: 1.6;
+    }
+    .note {
+      font-size: 0.85rem;
+      color: #757575;
+      margin-left: 1.8rem;
+      margin-top: -0.2rem;
+      margin-bottom: 0.3rem;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid #ccc;
+      font-size: 0.85rem;
+      color: #757575;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>鉄骨設計 Action List</h1>
+
+  <h2><span class="phase-number">1</span>企画・基本計画</h2>
+  <ul>
+    <li><input type="checkbox" id="a1"><label for="a1">建物用途・規模・階数の確認</label></li>
+    <li><input type="checkbox" id="a2"><label for="a2">適用法規の確認（建築基準法・消防法等）</label></li>
+    <li><input type="checkbox" id="a3"><label for="a3">構造種別の決定（S造・SRC造等）</label></li>
+    <li><input type="checkbox" id="a4"><label for="a4">地盤調査報告書の確認（ボーリングデータ・N値）</label></li>
+    <li><input type="checkbox" id="a5"><label for="a5">設計方針の決定（ルート判定：ルート1/2/3）</label></li>
+    <li><input type="checkbox" id="a6"><label for="a6">耐震等級の確認・設定</label></li>
+  </ul>
+
+  <h2><span class="phase-number">2</span>荷重条件の設定</h2>
+  <ul>
+    <li><input type="checkbox" id="b1"><label for="b1">固定荷重（DL）の算定</label></li>
+    <li><input type="checkbox" id="b2"><label for="b2">積載荷重（LL）の設定（床用・架構用・地震用）</label></li>
+    <li><input type="checkbox" id="b3"><label for="b3">積雪荷重（SL）の設定（一般/多雪区域の確認）</label></li>
+    <li><input type="checkbox" id="b4"><label for="b4">風荷重（WL）の算定（速度圧・風力係数）</label></li>
+    <li><input type="checkbox" id="b5"><label for="b5">地震荷重の算定（Ci・Ai分布・地域係数Z）</label></li>
+    <li><input type="checkbox" id="b6"><label for="b6">荷重組合せの設定（長期・短期・各ケース）</label></li>
+  </ul>
+
+  <h2><span class="phase-number">3</span>構造計画・架構計画</h2>
+  <ul>
+    <li><input type="checkbox" id="c1"><label for="c1">柱配置・スパン割りの決定</label></li>
+    <li><input type="checkbox" id="c2"><label for="c2">架構形式の決定（純ラーメン・ブレース付等）</label></li>
+    <li><input type="checkbox" id="c3"><label for="c3">ブレース配置計画（偏心率の考慮）</label></li>
+    <li><input type="checkbox" id="c4"><label for="c4">床構造の決定（デッキスラブ・ALC等）</label></li>
+    <li><input type="checkbox" id="c5"><label for="c5">柱脚形式の決定（露出型・根巻型・埋込型）</label></li>
+    <li><input type="checkbox" id="c6"><label for="c6">基礎形式の決定（直接基礎・杭基礎）</label></li>
+    <li><input type="checkbox" id="c7"><label for="c7">エキスパンションジョイントの要否検討</label></li>
+  </ul>
+
+  <h2><span class="phase-number">4</span>部材断面の仮定・設計</h2>
+  <ul>
+    <li><input type="checkbox" id="d1"><label for="d1">鋼材種別の選定（SN400B・SN490B・BCR295等）</label></li>
+    <li><input type="checkbox" id="d2"><label for="d2">柱断面の仮定（角形鋼管・H形鋼・円形鋼管）</label></li>
+    <li><input type="checkbox" id="d3"><label for="d3">梁断面の仮定（H形鋼・BH）</label></li>
+    <li><input type="checkbox" id="d4"><label for="d4">ブレース断面の仮定</label></li>
+    <li><input type="checkbox" id="d5"><label for="d5">小梁・間柱の断面設計</label></li>
+    <li><input type="checkbox" id="d6"><label for="d6">幅厚比の確認（FA・FB・FC・FD）</label></li>
+  </ul>
+
+  <h2><span class="phase-number">5</span>構造解析</h2>
+  <ul>
+    <li><input type="checkbox" id="e1"><label for="e1">解析モデルの作成（一貫計算ソフト入力）</label></li>
+    <li><input type="checkbox" id="e2"><label for="e2">長期応力解析の実施</label></li>
+    <li><input type="checkbox" id="e3"><label for="e3">短期応力解析の実施（地震時・風荷重時）</label></li>
+    <li><input type="checkbox" id="e4"><label for="e4">層間変形角の確認（1/200以下）</label></li>
+    <li><input type="checkbox" id="e5"><label for="e5">剛性率の確認（0.6以上）</label></li>
+    <li><input type="checkbox" id="e6"><label for="e6">偏心率の確認（0.15以下）</label></li>
+    <li><input type="checkbox" id="e7"><label for="e7">塔状比の確認</label></li>
+  </ul>
+
+  <h2><span class="phase-number">6</span>断面検定</h2>
+  <ul>
+    <li><input type="checkbox" id="f1"><label for="f1">柱の断面検定（軸力+曲げ）</label></li>
+    <li><input type="checkbox" id="f2"><label for="f2">梁の断面検定（曲げ+せん断）</label></li>
+    <li><input type="checkbox" id="f3"><label for="f3">梁の横座屈の検討</label></li>
+    <li><input type="checkbox" id="f4"><label for="f4">ブレースの断面検定（引張・座屈）</label></li>
+    <li><input type="checkbox" id="f5"><label for="f5">柱梁耐力比の確認（冷間成形角形鋼管の場合）</label></li>
+    <li><input type="checkbox" id="f6"><label for="f6">たわみの確認（梁：L/300以下等）</label></li>
+    <li><input type="checkbox" id="f7"><label for="f7">検定比のNG部材がないことを確認</label></li>
+  </ul>
+
+  <h2><span class="phase-number">7</span>接合部設計</h2>
+  <ul>
+    <li><input type="checkbox" id="g1"><label for="g1">柱梁接合部（仕口）の設計</label></li>
+    <li><input type="checkbox" id="g2"><label for="g2">パネルゾーンの検討</label></li>
+    <li><input type="checkbox" id="g3"><label for="g3">ダイアフラムの設計（通し・内・外ダイアフラム）</label></li>
+    <li><input type="checkbox" id="g4"><label for="g4">高力ボルト接合部の設計（摩擦接合・引張接合）</label></li>
+    <li><input type="checkbox" id="g5"><label for="g5">溶接接合部の設計（完全溶込み・隅肉溶接）</label></li>
+    <li><input type="checkbox" id="g6"><label for="g6">ブレース接合部（ガセットプレート）の設計</label></li>
+    <li><input type="checkbox" id="g7"><label for="g7">継手位置・形式の決定</label></li>
+    <li><input type="checkbox" id="g8"><label for="g8">スカラップ形状の確認（ノンスカラップ工法の検討）</label></li>
+  </ul>
+
+  <h2><span class="phase-number">8</span>柱脚設計</h2>
+  <ul>
+    <li><input type="checkbox" id="h1"><label for="h1">アンカーボルトの設計（本数・径・埋込み長さ）</label></li>
+    <li><input type="checkbox" id="h2"><label for="h2">ベースプレートの設計（板厚・寸法）</label></li>
+    <li><input type="checkbox" id="h3"><label for="h3">基礎コンクリートの支圧応力度の検討</label></li>
+    <li><input type="checkbox" id="h4"><label for="h4">柱脚の回転剛性の設定と反映</label></li>
+    <li><input type="checkbox" id="h5"><label for="h5">根巻きコンクリートの設計（根巻型の場合）</label></li>
+  </ul>
+
+  <h2><span class="phase-number">9</span>基礎設計</h2>
+  <ul>
+    <li><input type="checkbox" id="i1"><label for="i1">基礎梁の断面設計</label></li>
+    <li><input type="checkbox" id="i2"><label for="i2">フーチングの設計（直接基礎の場合）</label></li>
+    <li><input type="checkbox" id="i3"><label for="i3">杭の選定・設計（杭基礎の場合）</label></li>
+    <li><input type="checkbox" id="i4"><label for="i4">地中梁の設計</label></li>
+    <li><input type="checkbox" id="i5"><label for="i5">転倒・滑動の検討</label></li>
+  </ul>
+
+  <h2><span class="phase-number">10</span>保有水平耐力計算（ルート3の場合）</h2>
+  <ul>
+    <li><input type="checkbox" id="j1"><label for="j1">保有水平耐力（Qu）の算定</label></li>
+    <li><input type="checkbox" id="j2"><label for="j2">必要保有水平耐力（Qun）の算定</label></li>
+    <li><input type="checkbox" id="j3"><label for="j3">構造特性係数（Ds）の算定</label></li>
+    <li><input type="checkbox" id="j4"><label for="j4">崩壊メカニズムの確認（全体崩壊型）</label></li>
+    <li><input type="checkbox" id="j5"><label for="j5">Qu ≧ Qun の確認</label></li>
+    <li><input type="checkbox" id="j6"><label for="j6">部材のランク確認（FA～FD）</label></li>
+  </ul>
+
+  <h2><span class="phase-number">11</span>図面・計算書の作成</h2>
+  <ul>
+    <li><input type="checkbox" id="k1"><label for="k1">構造図の作成（伏図・軸組図）</label></li>
+    <li><input type="checkbox" id="k2"><label for="k2">部材リストの作成</label></li>
+    <li><input type="checkbox" id="k3"><label for="k3">接合部詳細図の作成</label></li>
+    <li><input type="checkbox" id="k4"><label for="k4">柱脚詳細図の作成</label></li>
+    <li><input type="checkbox" id="k5"><label for="k5">構造計算書のとりまとめ</label></li>
+    <li><input type="checkbox" id="k6"><label for="k6">構造計算概要書の作成</label></li>
+  </ul>
+
+  <h2><span class="phase-number">12</span>確認申請・審査対応</h2>
+  <ul>
+    <li><input type="checkbox" id="l1"><label for="l1">確認申請書類の作成・提出</label></li>
+    <li><input type="checkbox" id="l2"><label for="l2">適合性判定の要否確認（ルート2-3以上）</label></li>
+    <li><input type="checkbox" id="l3"><label for="l3">審査機関からの質疑対応</label></li>
+    <li><input type="checkbox" id="l4"><label for="l4">確認済証の取得</label></li>
+  </ul>
+
+  <h2><span class="phase-number">13</span>施工段階の確認</h2>
+  <ul>
+    <li><input type="checkbox" id="m1"><label for="m1">工作図（ファブ図）の確認・承認</label></li>
+    <li><input type="checkbox" id="m2"><label for="m2">鋼材のミルシート確認</label></li>
+    <li><input type="checkbox" id="m3"><label for="m3">溶接施工要領書の確認</label></li>
+    <li><input type="checkbox" id="m4"><label for="m4">超音波探傷検査（UT検査）の実施確認</label></li>
+    <li><input type="checkbox" id="m5"><label for="m5">高力ボルト締付け管理の確認</label></li>
+    <li><input type="checkbox" id="m6"><label for="m6">建方精度の確認（柱の倒れ等）</label></li>
+    <li><input type="checkbox" id="m7"><label for="m7">中間検査・完了検査の対応</label></li>
+  </ul>
+
+  <footer>
+    <p>鉄骨設計 Action List &mdash; 建築基準法・各種指針に基づく一般的なチェック項目</p>
+  </footer>
+
+</body>
+</html>
