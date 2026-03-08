@@ -5,14 +5,13 @@
 ■ 概要
   PDFファイルの全ページを画像に変換し、PowerPointの各スライドに
   1ページずつ貼り付けるExcel VBAマクロです。
+  外部ソフトのインストールは不要です（Windows標準APIを使用）。
 
-■ 前提条件（必須）
+■ 前提条件
 
-  1. Ghostscript のインストール
-     - 無料のPDF処理ツールです
-     - ダウンロード: https://www.ghostscript.com/releases/gsdnld.html
-     - 64bit版 Windows → 「Ghostscript AGPL Release」の64bit版を選択
-     - インストーラの指示に従いインストールしてください
+  1. Windows 10 以降
+     - Windows標準搭載のPDF描画API（Windows.Data.Pdf）を使用します
+     - 追加ソフトのインストールは不要です
 
   2. Microsoft PowerPoint
      - PowerPointがインストールされている必要があります
@@ -29,7 +28,6 @@
      - メニュー「ツール」→「参照設定」を開く
      - 以下にチェックを入れてOK:
        ☑ Microsoft PowerPoint XX.X Object Library
-       ☑ Microsoft Scripting Runtime
 
   4. モジュールをインポート
      - メニュー「ファイル」→「ファイルのインポート」
@@ -48,7 +46,7 @@
   2. 「ConvertPdfToPpt」を選択して「実行」
   3. ファイル選択ダイアログでPDFファイルを選ぶ
   4. 自動的に以下の処理が行われます:
-     - PDFの各ページをPNG画像に変換
+     - PDFの各ページをPNG画像に変換（Windows標準API使用）
      - PowerPointを起動
      - 各ページの画像をスライドに貼り付け
      - 元のPDFと同じフォルダにPPTXファイルを保存
@@ -58,9 +56,6 @@
 
   PdfToPpt.bas 先頭の設定値を変更できます:
 
-  - GS_PATH: Ghostscriptのインストールパス
-    （通常は自動検索されるため変更不要）
-
   - DPI: 画像の解像度（デフォルト: 200）
     - 150: 軽量・やや粗い
     - 200: バランス良い（推奨）
@@ -68,9 +63,12 @@
 
 ■ トラブルシューティング
 
-  Q: 「PDFのページ数を取得できませんでした」と表示される
-  A: Ghostscriptがインストールされていないか、パスが正しくありません。
-     Ghostscriptをインストール後、再度実行してください。
+  Q: 「PDFから画像への変換に失敗しました」と表示される
+  A: 以下を確認してください:
+     - Windows 10 以降であること（Windows 7/8では動作しません）
+     - PowerShellが使用可能であること
+     - PDFファイルが破損していないこと
+     - PDFファイルのパスに特殊文字が含まれていないこと
 
   Q: 画像が粗い
   A: PdfToPpt.bas の DPI の値を 300 に変更してください。
@@ -83,5 +81,13 @@
   A: PowerPointがインストールされていることを確認してください。
      また、VBAの参照設定で PowerPoint Object Library が
      チェックされているか確認してください。
+
+■ 技術的な仕組み
+
+  1. VBAからPowerShellスクリプトを一時ファイルとして生成・実行
+  2. PowerShell内でWindows.Data.Pdf（WinRT API）を使用し、
+     PDFの各ページをPNG画像としてレンダリング
+  3. VBAがPowerPoint COMオートメーションで画像をスライドに配置
+  4. 一時ファイル（画像・スクリプト）は自動的に削除
 
 ==============================================================================

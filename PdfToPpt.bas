@@ -4,17 +4,17 @@
 ' 概要: PDFファイルを画像に変換し、全ページをPowerPointに貼り付けます
 '
 ' 前提条件:
-'   1. Ghostscript がインストールされていること
-'      ダウンロード: https://www.ghostscript.com/releases/gsdnld.html
-'   2. VBAの参照設定で以下を追加すること:
-'      - Microsoft PowerPoint XX.X Object Library
-'      - Microsoft Scripting Runtime
+'   - Windows 10 以降（標準のPDF描画APIを使用）
+'   - Microsoft PowerPoint がインストールされていること
+'   - 外部ソフトのインストールは不要です
+'
+' VBAの参照設定で以下を追加すること:
+'   - Microsoft PowerPoint XX.X Object Library
 '==============================================================================
 
 Option Explicit
 
 ' --- 設定値 ---
-Private Const GS_PATH As String = "C:\Program Files\gs\gs10.02.1\bin\gswin64c.exe"
 Private Const DPI As Long = 200  ' 画像の解像度（DPI）
 
 '==============================================================================
@@ -36,23 +36,22 @@ Public Sub ConvertPdfToPpt()
     ' 一時フォルダを作成
     outputFolder = CreateTempFolder(pdfPath)
 
-    ' PDFのページ数を取得
-    pageCount = GetPdfPageCount(pdfPath)
+    Application.StatusBar = "PDF変換中... ページ数を取得しています"
+
+    ' PowerShell + Windows.Data.Pdf でPDFを画像に変換
+    pageCount = ConvertPdfToImages(pdfPath, outputFolder)
     If pageCount = 0 Then
-        MsgBox "PDFのページ数を取得できませんでした。" & vbCrLf & _
-               "Ghostscriptのパスを確認してください。" & vbCrLf & _
-               "現在の設定: " & GS_PATH, vbExclamation
-        Exit Sub
-    End If
-
-    Application.StatusBar = "PDF変換中... 全" & pageCount & "ページ"
-
-    ' PDFを画像に変換
-    If Not ConvertPdfToImages(pdfPath, outputFolder, pageCount) Then
-        MsgBox "PDFから画像への変換に失敗しました。", vbExclamation
+        MsgBox "PDFから画像への変換に失敗しました。" & vbCrLf & vbCrLf & _
+               "以下を確認してください:" & vbCrLf & _
+               "- Windows 10 以降であること" & vbCrLf & _
+               "- PowerShellが使用可能であること" & vbCrLf & _
+               "- PDFファイルが破損していないこと", vbExclamation
+        CleanupTempFolder outputFolder
         Application.StatusBar = False
         Exit Sub
     End If
+
+    Application.StatusBar = "PDF変換完了（" & pageCount & "ページ）。PowerPoint作成中..."
 
     ' PowerPointに画像を貼り付け
     pptPath = CreatePptFromImages(outputFolder, pageCount, pdfPath)
@@ -107,182 +106,163 @@ Private Function CreateTempFolder(ByVal pdfPath As String) As String
 End Function
 
 '==============================================================================
-' GhostscriptでPDFのページ数を取得
-'==============================================================================
-Private Function GetPdfPageCount(ByVal pdfPath As String) As Long
-    Dim fso As Object
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
-    ' Ghostscriptが存在するか確認
-    If Not fso.FileExists(GS_PATH) Then
-        ' よく使われるパスを自動検索
-        Dim altPath As String
-        altPath = FindGhostscript()
-        If altPath = "" Then
-            GetPdfPageCount = 0
-            Exit Function
-        End If
-    End If
-
-    Dim gsExe As String
-    If fso.FileExists(GS_PATH) Then
-        gsExe = GS_PATH
-    Else
-        gsExe = FindGhostscript()
-    End If
-
-    ' ページ数取得用のPostScriptコマンド
-    Dim tempFile As String
-    tempFile = Environ("TEMP") & "\pdf_pagecount.txt"
-
-    Dim cmd As String
-    cmd = """" & gsExe & """ -q -dNODISPLAY -dNOSAFER --permit-file-read=""" & pdfPath & """ -c """ & _
-          "(" & Replace(pdfPath, "\", "/") & ") (r) file runpdfbegin pdfpagecount = quit"""
-
-    ' WScript.Shell を使用してコマンドを実行し、出力を取得
-    Dim wsh As Object
-    Set wsh = CreateObject("WScript.Shell")
-
-    Dim exec As Object
-    Set exec = wsh.exec("cmd /c " & cmd)
-
-    ' 出力を待つ
-    Do While exec.Status = 0
-        DoEvents
-    Loop
-
-    Dim output As String
-    output = Trim(exec.StdOut.ReadAll)
-
-    If IsNumeric(output) Then
-        GetPdfPageCount = CLng(output)
-    Else
-        ' 別の方法でページ数を取得
-        GetPdfPageCount = GetPdfPageCountAlt(pdfPath, gsExe)
-    End If
-End Function
-
-'==============================================================================
-' 代替方法でPDFのページ数を取得
-'==============================================================================
-Private Function GetPdfPageCountAlt(ByVal pdfPath As String, ByVal gsExe As String) As Long
-    ' 1ページずつ変換を試みてページ数を数える方法
-    Dim tempOut As String
-    tempOut = Environ("TEMP") & "\gs_test_page.png"
-
-    Dim page As Long
-    Dim wsh As Object
-    Set wsh = CreateObject("WScript.Shell")
-
-    For page = 1 To 500  ' 最大500ページまで
-        Dim cmd As String
-        cmd = """" & gsExe & """ -q -dNOPAUSE -dBATCH -dSAFER " & _
-              "-dFirstPage=" & page & " -dLastPage=" & page & " " & _
-              "-sDEVICE=pngalpha -r72 -o """ & tempOut & """ """ & pdfPath & """"
-
-        Dim exitCode As Long
-        exitCode = wsh.Run("cmd /c " & cmd, 0, True)
-
-        Dim fso As Object
-        Set fso = CreateObject("Scripting.FileSystemObject")
-
-        If Not fso.FileExists(tempOut) Then
-            GetPdfPageCountAlt = page - 1
-            Exit Function
-        End If
-
-        ' ファイルサイズが0なら終了
-        If fso.GetFile(tempOut).Size = 0 Then
-            fso.DeleteFile tempOut
-            GetPdfPageCountAlt = page - 1
-            Exit Function
-        End If
-
-        fso.DeleteFile tempOut
-    Next page
-
-    GetPdfPageCountAlt = page - 1
-End Function
-
-'==============================================================================
-' Ghostscriptの自動検索
-'==============================================================================
-Private Function FindGhostscript() As String
-    Dim fso As Object
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
-    ' よく使われるインストールパスを検索
-    Dim basePaths As Variant
-    basePaths = Array( _
-        "C:\Program Files\gs", _
-        "C:\Program Files (x86)\gs" _
-    )
-
-    Dim basePath As Variant
-    For Each basePath In basePaths
-        If fso.FolderExists(CStr(basePath)) Then
-            Dim folder As Object
-            Set folder = fso.GetFolder(CStr(basePath))
-
-            Dim subFolder As Object
-            For Each subFolder In folder.SubFolders
-                Dim gsExe As String
-                gsExe = subFolder.Path & "\bin\gswin64c.exe"
-                If fso.FileExists(gsExe) Then
-                    FindGhostscript = gsExe
-                    Exit Function
-                End If
-
-                gsExe = subFolder.Path & "\bin\gswin32c.exe"
-                If fso.FileExists(gsExe) Then
-                    FindGhostscript = gsExe
-                    Exit Function
-                End If
-            Next subFolder
-        End If
-    Next basePath
-
-    FindGhostscript = ""
-End Function
-
-'==============================================================================
-' PDFを画像（PNG）に変換
+' PowerShell + Windows.Data.Pdf API でPDFを画像に変換
+' Windows 10/11 標準搭載のAPIを使用（外部ソフト不要）
+' 戻り値: 変換したページ数（失敗時は0）
 '==============================================================================
 Private Function ConvertPdfToImages(ByVal pdfPath As String, _
-                                     ByVal outputFolder As String, _
-                                     ByVal pageCount As Long) As Boolean
+                                     ByVal outputFolder As String) As Long
+    ' PowerShellスクリプトを一時ファイルに書き出して実行
+    Dim psScriptPath As String
+    psScriptPath = Environ("TEMP") & "\pdf_to_images.ps1"
+
+    Dim resultFile As String
+    resultFile = Environ("TEMP") & "\pdf_convert_result.txt"
+
+    ' PowerShellスクリプトを生成
+    Dim psCode As String
+    psCode = BuildPowerShellScript(pdfPath, outputFolder, resultFile)
+
+    ' スクリプトファイルに書き出し
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 
-    Dim gsExe As String
-    If fso.FileExists(GS_PATH) Then
-        gsExe = GS_PATH
-    Else
-        gsExe = FindGhostscript()
-    End If
+    Dim ts As Object
+    Set ts = fso.CreateTextFile(psScriptPath, True, False)
+    ts.Write psCode
+    ts.Close
 
-    If gsExe = "" Then
-        ConvertPdfToImages = False
-        Exit Function
-    End If
-
-    ' 全ページを一括で画像に変換
-    Dim outputPattern As String
-    outputPattern = outputFolder & "\page_%03d.png"
-
-    Dim cmd As String
-    cmd = """" & gsExe & """ -dNOPAUSE -dBATCH -dSAFER " & _
-          "-sDEVICE=pngalpha -r" & DPI & " " & _
-          "-o """ & outputPattern & """ """ & pdfPath & """"
-
+    ' PowerShellを実行
     Dim wsh As Object
     Set wsh = CreateObject("WScript.Shell")
 
-    Dim exitCode As Long
-    exitCode = wsh.Run("cmd /c " & cmd, 0, True)
+    Dim cmd As String
+    cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File """ & psScriptPath & """"
 
-    ' 変換結果を確認（最低1ページ分の画像が存在するか）
-    ConvertPdfToImages = fso.FileExists(outputFolder & "\page_001.png")
+    Dim exitCode As Long
+    exitCode = wsh.Run(cmd, 0, True)
+
+    ' 結果ファイルからページ数を読み取る
+    Dim pageCount As Long
+    pageCount = 0
+
+    If fso.FileExists(resultFile) Then
+        Set ts = fso.OpenTextFile(resultFile, 1)
+        Dim resultText As String
+        resultText = Trim(ts.ReadAll)
+        ts.Close
+        fso.DeleteFile resultFile
+
+        If IsNumeric(resultText) Then
+            pageCount = CLng(resultText)
+        End If
+    End If
+
+    ' スクリプトファイルを削除
+    If fso.FileExists(psScriptPath) Then
+        fso.DeleteFile psScriptPath
+    End If
+
+    ConvertPdfToImages = pageCount
+End Function
+
+'==============================================================================
+' PowerShellスクリプトを生成
+' Windows.Data.Pdf (WinRT API) を使用してPDFを画像に変換
+'==============================================================================
+Private Function BuildPowerShellScript(ByVal pdfPath As String, _
+                                        ByVal outputFolder As String, _
+                                        ByVal resultFile As String) As String
+    Dim s As String
+
+    ' エスケープ処理
+    Dim escapedPdf As String
+    Dim escapedOut As String
+    Dim escapedResult As String
+    escapedPdf = Replace(pdfPath, "'", "''")
+    escapedOut = Replace(outputFolder, "'", "''")
+    escapedResult = Replace(resultFile, "'", "''")
+
+    s = ""
+    s = s & "# PDF to Images using Windows.Data.Pdf (Windows 10+ built-in API)" & vbCrLf
+    s = s & "try {" & vbCrLf
+    s = s & "    # Load required WinRT assemblies" & vbCrLf
+    s = s & "    Add-Type -AssemblyName System.Runtime.WindowsRuntime" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    # Helper function to await WinRT async operations" & vbCrLf
+    s = s & "    $asTaskGeneric = ([System.WindowsRuntimeSystemExtensions].GetMethods() |" & vbCrLf
+    s = s & "        Where-Object { $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and" & vbCrLf
+    s = s & "        $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation``1' })[0]" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    Function Await($WinRtTask, $ResultType) {" & vbCrLf
+    s = s & "        $asTask = $asTaskGeneric.MakeGenericMethod($ResultType)" & vbCrLf
+    s = s & "        $netTask = $asTask.Invoke($null, @($WinRtTask))" & vbCrLf
+    s = s & "        $netTask.Wait(-1) | Out-Null" & vbCrLf
+    s = s & "        $netTask.Result" & vbCrLf
+    s = s & "    }" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    # Also need AsTask for IAsyncAction (no result)" & vbCrLf
+    s = s & "    $asTaskAction = ([System.WindowsRuntimeSystemExtensions].GetMethods() |" & vbCrLf
+    s = s & "        Where-Object { $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and" & vbCrLf
+    s = s & "        $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncAction' })[0]" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    Function AwaitAction($WinRtTask) {" & vbCrLf
+    s = s & "        $netTask = $asTaskAction.Invoke($null, @($WinRtTask))" & vbCrLf
+    s = s & "        $netTask.Wait(-1) | Out-Null" & vbCrLf
+    s = s & "    }" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    # Load Windows.Data.Pdf WinRT type" & vbCrLf
+    s = s & "    [Windows.Data.Pdf.PdfDocument,Windows.Data.Pdf,ContentType=WindowsRuntime] | Out-Null" & vbCrLf
+    s = s & "    [Windows.Storage.StorageFile,Windows.Storage,ContentType=WindowsRuntime] | Out-Null" & vbCrLf
+    s = s & "    [Windows.Storage.Streams.RandomAccessStream,Windows.Storage.Streams,ContentType=WindowsRuntime] | Out-Null" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    # Open PDF file" & vbCrLf
+    s = s & "    $pdfPath = '" & escapedPdf & "'" & vbCrLf
+    s = s & "    $outputFolder = '" & escapedOut & "'" & vbCrLf
+    s = s & "    $dpi = " & DPI & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    $storageFile = Await ([Windows.Storage.StorageFile]::GetFileFromPathAsync($pdfPath)) ([Windows.Storage.StorageFile])" & vbCrLf
+    s = s & "    $pdfDoc = Await ([Windows.Data.Pdf.PdfDocument]::LoadFromFileAsync($storageFile)) ([Windows.Data.Pdf.PdfDocument])" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    $pageCount = $pdfDoc.PageCount" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    # Render each page to PNG" & vbCrLf
+    s = s & "    for ($i = 0; $i -lt $pageCount; $i++) {" & vbCrLf
+    s = s & "        $page = $pdfDoc.GetPage($i)" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "        # Set render options for desired DPI" & vbCrLf
+    s = s & "        $renderOptions = New-Object Windows.Data.Pdf.PdfPageRenderOptions" & vbCrLf
+    s = s & "        $scale = $dpi / 96.0" & vbCrLf
+    s = s & "        $renderOptions.DestinationWidth  = [uint32]($page.Size.Width * $scale)" & vbCrLf
+    s = s & "        $renderOptions.DestinationHeight = [uint32]($page.Size.Height * $scale)" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "        # Create output stream" & vbCrLf
+    s = s & "        $pageNum = ($i + 1).ToString('000')" & vbCrLf
+    s = s & "        $outputPath = Join-Path $outputFolder ""page_$pageNum.png""" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "        $stream = New-Object Windows.Storage.Streams.InMemoryRandomAccessStream" & vbCrLf
+    s = s & "        AwaitAction ($page.RenderToStreamAsync($stream, $renderOptions))" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "        # Save stream to file" & vbCrLf
+    s = s & "        $fileStream = [System.IO.File]::Create($outputPath)" & vbCrLf
+    s = s & "        $stream.Seek(0)" & vbCrLf
+    s = s & "        $dotNetStream = [System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($stream)" & vbCrLf
+    s = s & "        $dotNetStream.CopyTo($fileStream)" & vbCrLf
+    s = s & "        $fileStream.Close()" & vbCrLf
+    s = s & "        $dotNetStream.Close()" & vbCrLf
+    s = s & "        $stream.Dispose()" & vbCrLf
+    s = s & "        $page.Dispose()" & vbCrLf
+    s = s & "    }" & vbCrLf
+    s = s & "" & vbCrLf
+    s = s & "    # Write page count to result file" & vbCrLf
+    s = s & "    $pageCount | Out-File -FilePath '" & escapedResult & "' -NoNewline" & vbCrLf
+    s = s & "}" & vbCrLf
+    s = s & "catch {" & vbCrLf
+    s = s & "    '0' | Out-File -FilePath '" & escapedResult & "' -NoNewline" & vbCrLf
+    s = s & "    Write-Error $_.Exception.Message" & vbCrLf
+    s = s & "}" & vbCrLf
+
+    BuildPowerShellScript = s
 End Function
 
 '==============================================================================
@@ -303,9 +283,7 @@ Private Function CreatePptFromImages(ByVal imageFolder As String, _
     Dim pres As Object
     Set pres = pptApp.Presentations.Add
 
-    ' スライドサイズをA4横に設定（必要に応じて変更可能）
-    ' 標準(4:3): 幅=720pt, 高さ=540pt
-    ' ワイド(16:9): 幅=960pt, 高さ=540pt
+    ' スライドサイズを取得
     Dim slideWidth As Single
     Dim slideHeight As Single
     slideWidth = pres.PageSetup.slideWidth
@@ -322,9 +300,9 @@ Private Function CreatePptFromImages(ByVal imageFolder As String, _
 
         Application.StatusBar = "PowerPoint作成中... " & i & "/" & pageCount & " ページ"
 
-        ' 空白スライドを追加（レイアウト7 = ppLayoutBlank）
+        ' 空白スライドを追加（12 = ppLayoutBlank）
         Dim slide As Object
-        Set slide = pres.Slides.Add(i, 12)  ' 12 = ppLayoutBlank
+        Set slide = pres.Slides.Add(i, 12)
 
         ' 画像を挿入
         Dim pic As Object
