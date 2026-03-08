@@ -1,7 +1,8 @@
 '==============================================================================
 ' PDF to PowerPoint Converter - Excel VBA Macro
 '==============================================================================
-' 概要: PDFファイルを画像に変換し、全ページをPowerPointに貼り付けます
+' 概要: 複数のPDFファイルを画像に変換し、1つのPowerPointに貼り付けます
+'       各PDFはセクションで区切られ、セクション名はPDFファイル名になります
 '
 ' 前提条件:
 '   - Windows 10 以降（標準のPDF描画APIを使用）
@@ -18,71 +19,174 @@ Option Explicit
 Private Const DPI As Long = 200  ' 画像の解像度（DPI）
 
 '==============================================================================
-' メイン処理: PDFを選択してPowerPointに変換する
+' メイン処理: 複数PDFを選択してPowerPointに変換する
 '==============================================================================
 Public Sub ConvertPdfToPpt()
-    Dim pdfPath As String
-    Dim outputFolder As String
-    Dim pageCount As Long
-    Dim pptPath As String
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
 
-    ' PDFファイルを選択
-    pdfPath = SelectPdfFile()
-    If pdfPath = "" Then
+    ' 複数PDFファイルを選択
+    Dim pdfPaths() As String
+    Dim pdfCount As Long
+    pdfCount = SelectPdfFiles(pdfPaths)
+
+    If pdfCount = 0 Then
         MsgBox "PDFファイルが選択されませんでした。", vbInformation
         Exit Sub
     End If
 
-    ' 一時フォルダを作成
-    outputFolder = CreateTempFolder(pdfPath)
+    ' PowerPointアプリケーションを起動
+    Dim pptApp As Object
+    Set pptApp = CreateObject("PowerPoint.Application")
+    pptApp.Visible = True
 
-    Application.StatusBar = "PDF変換中... ページ数を取得しています"
+    ' 新しいプレゼンテーションを作成
+    Dim pres As Object
+    Set pres = pptApp.Presentations.Add
 
-    ' PowerShell + Windows.Data.Pdf でPDFを画像に変換
-    pageCount = ConvertPdfToImages(pdfPath, outputFolder)
-    If pageCount = 0 Then
-        MsgBox "PDFから画像への変換に失敗しました。" & vbCrLf & vbCrLf & _
-               "以下を確認してください:" & vbCrLf & _
-               "- Windows 10 以降であること" & vbCrLf & _
-               "- PowerShellが使用可能であること" & vbCrLf & _
-               "- PDFファイルが破損していないこと", vbExclamation
+    Dim slideWidth As Single
+    Dim slideHeight As Single
+    slideWidth = pres.PageSetup.slideWidth
+    slideHeight = pres.PageSetup.slideHeight
+
+    Dim slideIndex As Long
+    slideIndex = 0  ' 現在のスライド数（0から開始）
+
+    Dim pdfIdx As Long
+    For pdfIdx = 0 To pdfCount - 1
+        Dim pdfPath As String
+        pdfPath = pdfPaths(pdfIdx)
+        Dim pdfName As String
+        pdfName = fso.GetBaseName(pdfPath)
+
+        Application.StatusBar = "PDF変換中 (" & (pdfIdx + 1) & "/" & pdfCount & "): " & fso.GetFileName(pdfPath)
+
+        ' 一時フォルダを作成
+        Dim outputFolder As String
+        outputFolder = CreateTempFolder(pdfPath)
+
+        ' PDFを画像に変換
+        Dim pageCount As Long
+        pageCount = ConvertPdfToImages(pdfPath, outputFolder)
+
+        If pageCount = 0 Then
+            MsgBox "PDFから画像への変換に失敗しました:" & vbCrLf & _
+                   fso.GetFileName(pdfPath) & vbCrLf & vbCrLf & _
+                   "このPDFをスキップして続行します。", vbExclamation
+            CleanupTempFolder outputFolder
+            GoTo NextPdf
+        End If
+
+        ' セクションの最初のスライドのインデックスを記録
+        Dim sectionFirstSlide As Long
+        sectionFirstSlide = slideIndex + 1
+
+        ' 画像をスライドに貼り付け
+        Dim i As Long
+        For i = 1 To pageCount
+            Dim imagePath As String
+            imagePath = outputFolder & "\page_" & Format(i, "000") & ".png"
+
+            If Not fso.FileExists(imagePath) Then
+                GoTo NextImage
+            End If
+
+            slideIndex = slideIndex + 1
+            Application.StatusBar = "PowerPoint作成中 (" & (pdfIdx + 1) & "/" & pdfCount & "): " & _
+                                    pdfName & " - " & i & "/" & pageCount & " ページ"
+
+            ' 空白スライドを追加（12 = ppLayoutBlank）
+            Dim slide As Object
+            Set slide = pres.Slides.Add(slideIndex, 12)
+
+            ' 画像を挿入
+            Dim pic As Object
+            Set pic = slide.Shapes.AddPicture( _
+                FileName:=imagePath, _
+                LinkToFile:=False, _
+                SaveWithDocument:=True, _
+                Left:=0, _
+                Top:=0)
+
+            ' 画像をスライドに合わせてリサイズ（アスペクト比を維持）
+            Dim scaleW As Single
+            Dim scaleH As Single
+            scaleW = slideWidth / pic.Width
+            scaleH = slideHeight / pic.Height
+
+            Dim scaleFactor As Single
+            If scaleW < scaleH Then
+                scaleFactor = scaleW
+            Else
+                scaleFactor = scaleH
+            End If
+
+            pic.Width = pic.Width * scaleFactor
+            pic.Height = pic.Height * scaleFactor
+
+            ' 画像を中央に配置
+            pic.Left = (slideWidth - pic.Width) / 2
+            pic.Top = (slideHeight - pic.Height) / 2
+
+NextImage:
+        Next i
+
+        ' セクションを追加（PDFファイル名をセクション名にする）
+        If sectionFirstSlide <= slideIndex Then
+            pres.SectionProperties.AddBeforeSlide sectionFirstSlide, pdfName
+        End If
+
+        ' 一時ファイルを削除
         CleanupTempFolder outputFolder
-        Application.StatusBar = False
-        Exit Sub
+
+NextPdf:
+    Next pdfIdx
+
+    ' PowerPointファイルを保存（最初のPDFと同じフォルダに保存）
+    Dim pptPath As String
+    If pdfCount = 1 Then
+        pptPath = fso.GetParentFolderName(pdfPaths(0)) & "\" & _
+                  fso.GetBaseName(pdfPaths(0)) & ".pptx"
+    Else
+        pptPath = fso.GetParentFolderName(pdfPaths(0)) & "\統合PDF.pptx"
     End If
 
-    Application.StatusBar = "PDF変換完了（" & pageCount & "ページ）。PowerPoint作成中..."
-
-    ' PowerPointに画像を貼り付け
-    pptPath = CreatePptFromImages(outputFolder, pageCount, pdfPath)
-
-    ' 一時ファイルを削除
-    CleanupTempFolder outputFolder
+    pres.SaveAs pptPath
 
     Application.StatusBar = False
 
-    If pptPath <> "" Then
-        MsgBox "PowerPointファイルを作成しました:" & vbCrLf & pptPath, vbInformation
-    End If
+    MsgBox "PowerPointファイルを作成しました:" & vbCrLf & pptPath & vbCrLf & vbCrLf & _
+           "PDF数: " & pdfCount & vbCrLf & _
+           "スライド数: " & slideIndex, vbInformation
 End Sub
 
 '==============================================================================
-' PDFファイル選択ダイアログ
+' 複数PDFファイル選択ダイアログ
+' 戻り値: 選択されたファイル数（0=キャンセル）
 '==============================================================================
-Private Function SelectPdfFile() As String
+Private Function SelectPdfFiles(ByRef outPaths() As String) As Long
     Dim fd As FileDialog
     Set fd = Application.FileDialog(msoFileDialogFilePicker)
 
     With fd
-        .Title = "PDFファイルを選択してください"
+        .Title = "PDFファイルを選択してください（複数選択可）"
         .Filters.Clear
         .Filters.Add "PDFファイル", "*.pdf"
-        .AllowMultiSelect = False
+        .AllowMultiSelect = True
 
         If .Show = -1 Then
-            SelectPdfFile = .SelectedItems(1)
+            Dim cnt As Long
+            cnt = .SelectedItems.Count
+            ReDim outPaths(0 To cnt - 1)
+
+            Dim j As Long
+            For j = 1 To cnt
+                outPaths(j - 1) = .SelectedItems(j)
+            Next j
+
+            SelectPdfFiles = cnt
         Else
-            SelectPdfFile = ""
+            SelectPdfFiles = 0
         End If
     End With
 End Function
@@ -263,87 +367,6 @@ Private Function BuildPowerShellScript(ByVal pdfPath As String, _
     s = s & "}" & vbCrLf
 
     BuildPowerShellScript = s
-End Function
-
-'==============================================================================
-' 画像からPowerPointを作成
-'==============================================================================
-Private Function CreatePptFromImages(ByVal imageFolder As String, _
-                                      ByVal pageCount As Long, _
-                                      ByVal pdfPath As String) As String
-    Dim fso As Object
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
-    ' PowerPointアプリケーションを起動
-    Dim pptApp As Object
-    Set pptApp = CreateObject("PowerPoint.Application")
-    pptApp.Visible = True
-
-    ' 新しいプレゼンテーションを作成
-    Dim pres As Object
-    Set pres = pptApp.Presentations.Add
-
-    ' スライドサイズを取得
-    Dim slideWidth As Single
-    Dim slideHeight As Single
-    slideWidth = pres.PageSetup.slideWidth
-    slideHeight = pres.PageSetup.slideHeight
-
-    Dim i As Long
-    For i = 1 To pageCount
-        Dim imagePath As String
-        imagePath = imageFolder & "\page_" & Format(i, "000") & ".png"
-
-        If Not fso.FileExists(imagePath) Then
-            GoTo NextPage
-        End If
-
-        Application.StatusBar = "PowerPoint作成中... " & i & "/" & pageCount & " ページ"
-
-        ' 空白スライドを追加（12 = ppLayoutBlank）
-        Dim slide As Object
-        Set slide = pres.Slides.Add(i, 12)
-
-        ' 画像を挿入
-        Dim pic As Object
-        Set pic = slide.Shapes.AddPicture( _
-            FileName:=imagePath, _
-            LinkToFile:=False, _
-            SaveWithDocument:=True, _
-            Left:=0, _
-            Top:=0)
-
-        ' 画像をスライドに合わせてリサイズ（アスペクト比を維持）
-        Dim scaleW As Single
-        Dim scaleH As Single
-        scaleW = slideWidth / pic.Width
-        scaleH = slideHeight / pic.Height
-
-        Dim scaleFactor As Single
-        If scaleW < scaleH Then
-            scaleFactor = scaleW
-        Else
-            scaleFactor = scaleH
-        End If
-
-        pic.Width = pic.Width * scaleFactor
-        pic.Height = pic.Height * scaleFactor
-
-        ' 画像を中央に配置
-        pic.Left = (slideWidth - pic.Width) / 2
-        pic.Top = (slideHeight - pic.Height) / 2
-
-NextPage:
-    Next i
-
-    ' PowerPointファイルを保存
-    Dim pptPath As String
-    pptPath = fso.GetParentFolderName(pdfPath) & "\" & _
-              fso.GetBaseName(pdfPath) & ".pptx"
-
-    pres.SaveAs pptPath
-
-    CreatePptFromImages = pptPath
 End Function
 
 '==============================================================================
