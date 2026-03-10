@@ -3,28 +3,197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>シンプルなページ</title>
+  <title>鉄骨設計 LE Action List</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: sans-serif;
-      max-width: 800px;
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      max-width: 960px;
       margin: 0 auto;
       padding: 2rem;
-      background-color: #f5f5f5;
+      background-color: #f0f2f5;
       color: #333;
     }
-    h1 {
-      color: #2c3e50;
-      border-bottom: 2px solid #3498db;
-      padding-bottom: 0.5rem;
+    header {
+      background: linear-gradient(135deg, #1a237e, #0d47a1);
+      color: #fff;
+      padding: 1.5rem 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
     }
-    p {
-      line-height: 1.6;
+    header h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+    header p { font-size: 0.9rem; opacity: 0.85; }
+    .phase {
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+    .phase-header .num {
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .phase:nth-child(1) .phase-header { background: #1565c0; }
+    .phase:nth-child(2) .phase-header { background: #00838f; }
+    .phase:nth-child(3) .phase-header { background: #2e7d32; }
+    .phase:nth-child(4) .phase-header { background: #ef6c00; }
+    .phase:nth-child(5) .phase-header { background: #6a1b9a; }
+    .phase:nth-child(6) .phase-header { background: #c62828; }
+    .phase-body { padding: 1rem 1.5rem; }
+    .action-list { list-style: none; }
+    .action-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid #eee;
+      line-height: 1.5;
+    }
+    .action-list li:last-child { border-bottom: none; }
+    .action-list li::before {
+      content: '☐';
+      flex-shrink: 0;
+      font-size: 1rem;
+      margin-top: 0.1rem;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+      font-weight: bold;
+    }
+    .tag-important { background: #ffcdd2; color: #b71c1c; }
+    .tag-doc      { background: #bbdefb; color: #0d47a1; }
+    .tag-meeting  { background: #c8e6c9; color: #1b5e20; }
+    .tag-check    { background: #fff9c4; color: #f57f17; }
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #999;
     }
   </style>
 </head>
 <body>
-  <h1>こんにちは、世界！</h1>
-  <p>これはシンプルなHTMLページです。</p>
+
+<header>
+  <h1>Plant設計 — 鉄骨設計 LE Action List</h1>
+  <p>Lead Engineer 着任時に最初に実施すべきアクション一覧</p>
+</header>
+
+<!-- Phase 1 -->
+<section class="phase">
+  <div class="phase-header"><span class="num">1</span>プロジェクト概要の把握</div>
+  <div class="phase-body">
+    <ul class="action-list">
+      <li>プロジェクト基本情報（プラント種別・規模・工期・予算）の確認 <span class="tag tag-important">重要</span></li>
+      <li>契約図書・仕様書（Job Specification）の入手と通読 <span class="tag tag-doc">文書</span></li>
+      <li>適用基準・コード（AISC, AWS, 建築基準法 等）の確認 <span class="tag tag-important">重要</span></li>
+      <li>クライアント Design Criteria / Design Basis の確認</li>
+      <li>前任LEまたはプロジェクトマネージャーからの引継ぎ <span class="tag tag-meeting">打合せ</span></li>
+      <li>過去の類似プロジェクト実績・Lessons Learned の収集</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Phase 2 -->
+<section class="phase">
+  <div class="phase-header"><span class="num">2</span>設計条件の整理</div>
+  <div class="phase-body">
+    <ul class="action-list">
+      <li>荷重条件の整理（自重・積載・風荷重・地震荷重・温度荷重・配管反力等） <span class="tag tag-important">重要</span></li>
+      <li>地盤条件・基礎設計条件の確認（土質調査報告書の入手）</li>
+      <li>耐火・防食要件の確認</li>
+      <li>材料規格の選定（SS400, SM490, ASTM A36, A992 等）</li>
+      <li>設計ソフトウェア・ツールの確認（STAAD.Pro, SAP2000, Tekla 等）</li>
+      <li>接合部設計方針（ボルト接合 / 溶接接合）の基本方針策定</li>
+      <li>Deflection / Drift の許容値の確認</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Phase 3 -->
+<section class="phase">
+  <div class="phase-header"><span class="num">3</span>体制構築とスケジュール策定</div>
+  <div class="phase-body">
+    <ul class="action-list">
+      <li>鉄骨設計チームの編成・人員計画の作成 <span class="tag tag-important">重要</span></li>
+      <li>Man-Hour 見積り・工数配分の策定</li>
+      <li>設計スケジュール（マイルストーン）の作成 <span class="tag tag-doc">文書</span></li>
+      <li>図面リスト（Drawing List）の作成</li>
+      <li>設計計算書リスト（Calculation List）の作成</li>
+      <li>他部門（配管・機器・電気・計装・土建）との Interface 確認 <span class="tag tag-meeting">打合せ</span></li>
+      <li>外注設計（Subcontract）範囲がある場合のスコープ明確化</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Phase 4 -->
+<section class="phase">
+  <div class="phase-header"><span class="num">4</span>設計基盤の準備</div>
+  <div class="phase-body">
+    <ul class="action-list">
+      <li>標準図・標準ディテール（Standard Detail）の選定・準備</li>
+      <li>CAD テンプレート・図枠の準備</li>
+      <li>構造解析モデルの基本方針策定 <span class="tag tag-important">重要</span></li>
+      <li>Pipe Rack / Equipment Support 等の主要構造物のタイプ分類</li>
+      <li>Key Plan / Plot Plan からの鉄骨構造物リストアップ</li>
+      <li>設計計算書テンプレートの整備</li>
+      <li>番号体系（マーク番号・図番ルール）の設定 <span class="tag tag-doc">文書</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- Phase 5 -->
+<section class="phase">
+  <div class="phase-header"><span class="num">5</span>品質管理・レビュー体制</div>
+  <div class="phase-body">
+    <ul class="action-list">
+      <li>設計チェックリストの整備 <span class="tag tag-check">チェック</span></li>
+      <li>設計照査（Design Review）プロセスの確立 <span class="tag tag-important">重要</span></li>
+      <li>Interdisciplinary Check（IDC）手順の確認</li>
+      <li>クライアント承認プロセス・提出フローの確認</li>
+      <li>NCR（不適合報告）/ 設計変更管理手順の確認</li>
+      <li>QMS（品質マネジメントシステム）要求事項の確認</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Phase 6 -->
+<section class="phase">
+  <div class="phase-header"><span class="num">6</span>キックオフ・初期アクション</div>
+  <div class="phase-body">
+    <ul class="action-list">
+      <li>鉄骨設計チーム内キックオフミーティングの実施 <span class="tag tag-meeting">打合せ</span></li>
+      <li>他部門との設計条件確認会議の設定 <span class="tag tag-meeting">打合せ</span></li>
+      <li>優先度の高い構造物（Long Lead Item 関連）の特定と着手 <span class="tag tag-important">重要</span></li>
+      <li>MTO（Material Take Off）初版の計画</li>
+      <li>クライアントへの設計方針説明資料の準備 <span class="tag tag-doc">文書</span></li>
+      <li>リスク事項・未確定事項（TBD / TBC）の一覧作成 <span class="tag tag-check">チェック</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <p>Plant Steel Design — LE Action List Template</p>
+</footer>
+
 </body>
 </html>
