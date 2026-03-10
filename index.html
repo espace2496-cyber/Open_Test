@@ -3,28 +3,211 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>シンプルなページ</title>
+  <title>鉄骨設計 エンジニア役割定義</title>
   <style>
     body {
-      font-family: sans-serif;
-      max-width: 800px;
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      max-width: 960px;
       margin: 0 auto;
       padding: 2rem;
       background-color: #f5f5f5;
       color: #333;
+      line-height: 1.8;
     }
     h1 {
-      color: #2c3e50;
-      border-bottom: 2px solid #3498db;
+      color: #1a1a2e;
+      border-bottom: 3px solid #e94560;
       padding-bottom: 0.5rem;
+      text-align: center;
     }
-    p {
-      line-height: 1.6;
+    h2 {
+      color: #16213e;
+      border-left: 5px solid #e94560;
+      padding-left: 0.8rem;
+      margin-top: 2.5rem;
+    }
+    h3 {
+      color: #0f3460;
+      margin-top: 1.5rem;
+    }
+    .role-section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    ul {
+      padding-left: 1.5rem;
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+    .highlight {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 1rem 1.2rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .step-up {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 1rem 1.2rem;
+      margin: 1rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.7rem 1rem;
+      text-align: left;
+    }
+    th {
+      background: #16213e;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f8f9fa;
     }
   </style>
 </head>
 <body>
-  <h1>こんにちは、世界！</h1>
-  <p>これはシンプルなHTMLページです。</p>
+
+  <h1>鉄骨設計 エンジニア役割定義書</h1>
+
+  <!-- ========== Lead Engineer ========== -->
+  <h2>1. Lead Engineer（主任技術者）</h2>
+
+  <div class="role-section">
+    <h3>1-1. 業務内容</h3>
+    <ul>
+      <li><strong>プロジェクト全体の設計方針策定</strong> — 構造形式（ラーメン・ブレース・制振等）の選定、荷重条件・設計基準の確定</li>
+      <li><strong>構造計算の最終判断</strong> — 応力解析結果のレビュー、部材断面の最終決定、接合部ディテールの承認</li>
+      <li><strong>設計図書の品質管理</strong> — 構造図・計算書・仕様書の最終チェックおよび承認</li>
+      <li><strong>関連部門との技術調整</strong> — 意匠設計・設備設計・施工部門との取り合い調整、VE（バリューエンジニアリング）提案</li>
+      <li><strong>法令適合性の確認</strong> — 建築基準法・告示・指針への整合性確認、構造計算適合性判定への対応</li>
+      <li><strong>チームマネジメント</strong> — Assistant Lead Engineer・担当者への業務配分、技術指導、進捗管理</li>
+      <li><strong>顧客・審査機関対応</strong> — 設計説明、構造計算適合性判定（適判）対応、確認申請の技術的質疑回答</li>
+    </ul>
+
+    <h3>1-2. 責任範囲</h3>
+    <table>
+      <tr>
+        <th>領域</th>
+        <th>責任内容</th>
+      </tr>
+      <tr>
+        <td>技術品質</td>
+        <td>構造安全性・設計品質の最終責任を持つ</td>
+      </tr>
+      <tr>
+        <td>コスト</td>
+        <td>鉄骨数量（t数）の最適化に対する責任</td>
+      </tr>
+      <tr>
+        <td>工程</td>
+        <td>設計工程の遵守、後工程（施工）への影響を最小化する責任</td>
+      </tr>
+      <tr>
+        <td>法令遵守</td>
+        <td>法的適合性の最終確認責任</td>
+      </tr>
+      <tr>
+        <td>人材育成</td>
+        <td>チームメンバーの技術力向上に対する責任</td>
+      </tr>
+      <tr>
+        <td>リスク管理</td>
+        <td>設計上のリスク（想定外荷重、施工困難箇所等）の特定と対策立案</td>
+      </tr>
+    </table>
+
+    <h3>1-3. Value（価値）</h3>
+    <div class="highlight">
+      <ul>
+        <li><strong>安全性と経済性の両立</strong> — 過剰設計を避けつつ構造安全性を担保する最適設計の実現</li>
+        <li><strong>プロジェクト全体最適の視点</strong> — 意匠・設備・施工を含む全体最適の構造計画を提示できること</li>
+        <li><strong>技術的判断のスピードと正確性</strong> — 設計変更や突発的な問題に対し、迅速かつ的確に判断を下せること</li>
+        <li><strong>顧客信頼の獲得</strong> — 技術的根拠に基づいた説明力で顧客・審査機関からの信頼を勝ち取ること</li>
+        <li><strong>チーム生産性の向上</strong> — 明確な方針提示と適切な権限委譲によりチーム全体のアウトプットを最大化すること</li>
+        <li><strong>ナレッジの蓄積・展開</strong> — プロジェクトで得た知見を組織に還元し、次のプロジェクトに活かすこと</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ========== Assistant Lead Engineer ========== -->
+  <h2>2. Assistant Lead Engineer（副主任技術者）</h2>
+
+  <div class="role-section">
+    <h3>2-1. 業務内容</h3>
+    <ul>
+      <li><strong>構造計算の実施・取りまとめ</strong> — 一貫構造計算プログラム（SS7、SNAP等）による解析実行、結果整理、NG部材の対策検討</li>
+      <li><strong>設計図の作成管理</strong> — 伏図・軸組図・断面リスト・接合部詳細図の作成指示および照査</li>
+      <li><strong>Lead Engineerの補佐</strong> — 設計方針の具体化、技術検討資料の作成、打ち合わせ資料の準備</li>
+      <li><strong>担当者への技術指導</strong> — 若手エンジニアの計算・作図に対する指導・チェック</li>
+      <li><strong>施工図チェック</strong> — ファブ（鉄骨製作工場）から提出される施工図（工作図）の照査</li>
+      <li><strong>数量算出・コスト管理補助</strong> — 鉄骨数量の算出、VE検討の実務的な代替案作成</li>
+      <li><strong>社内照査への対応</strong> — 社内の設計照査における指摘対応・修正</li>
+    </ul>
+
+    <h3>2-2. 責任範囲</h3>
+    <table>
+      <tr>
+        <th>領域</th>
+        <th>責任内容</th>
+      </tr>
+      <tr>
+        <td>計算品質</td>
+        <td>構造計算の正確性、入力条件の妥当性に対する一次責任</td>
+      </tr>
+      <tr>
+        <td>図面品質</td>
+        <td>設計図の整合性・正確性に対する一次責任</td>
+      </tr>
+      <tr>
+        <td>工程管理</td>
+        <td>担当範囲の作業工程の管理・報告</td>
+      </tr>
+      <tr>
+        <td>技術情報</td>
+        <td>Lead Engineerへの適切な報告・相談・情報共有</td>
+      </tr>
+      <tr>
+        <td>指導</td>
+        <td>後輩エンジニアの成果物チェックと技術指導</td>
+      </tr>
+    </table>
+
+    <h3>2-3. Value（価値）</h3>
+    <div class="highlight">
+      <ul>
+        <li><strong>実務遂行力</strong> — 構造計算・設計図作成を正確かつ効率的にこなし、Lead Engineerが上流業務に集中できる環境を作ること</li>
+        <li><strong>問題の早期発見</strong> — 計算結果や図面の不整合を早期に発見し、手戻りを防止すること</li>
+        <li><strong>Lead Engineerの意図の翻訳</strong> — 設計方針を具体的な計算・作図作業に正確に落とし込むこと</li>
+        <li><strong>チーム内の技術的ハブ</strong> — Lead Engineerと担当者の間を繋ぎ、情報伝達と品質の橋渡しをすること</li>
+        <li><strong>代替案の提示力</strong> — 単にNGを報告するのではなく、解決策の選択肢を添えて報告すること</li>
+      </ul>
+    </div>
+
+    <h3>2-4. 次のステップ（Lead Engineerへの昇格）に必要なこと</h3>
+    <div class="step-up">
+      <ul>
+        <li><strong>設計方針の立案経験</strong> — 小規模案件でもよいので、構造形式の選定や荷重条件の設定を自ら主導する経験を積む</li>
+        <li><strong>顧客・外部対応の経験</strong> — 設計説明や適判対応にLead Engineerと同席し、徐々に自ら説明する場面を増やす</li>
+        <li><strong>全体最適の視点を養う</strong> — 構造だけでなく、意匠・設備・施工の制約条件を理解し、トレードオフを判断できるようになる</li>
+        <li><strong>コスト感覚の習得</strong> — 鉄骨単価、加工費、建方費の相場感を身につけ、経済的な設計判断ができるようになる</li>
+        <li><strong>リスク予見力の向上</strong> — 過去のトラブル事例を学び、設計段階で潜在リスクを特定・対策できる力を養う</li>
+        <li><strong>後輩育成の実績</strong> — 担当者の技術力向上に貢献した具体的な実績を作る</li>
+        <li><strong>社外ネットワークの構築</strong> — 学会発表、技術委員会への参加、他社エンジニアとの交流を通じて知見を広げる</li>
+        <li><strong>資格取得</strong> — 構造設計一級建築士の取得（Lead Engineerとしての必須要件となることが多い）</li>
+      </ul>
+    </div>
+  </div>
+
 </body>
 </html>
